@@ -4,24 +4,30 @@ const Triangle = require('./lib/triangle');
 const Circle = require('./lib/circle');
 const Square = require('./lib/square');
 
-function generateSVG(answers, shapeSVG) {
+function generateSVG(answers, shapeSVG, shapeColor) {
   const { text, textColor } = answers;
   const svgWidth = 300;
   const svgHeight = 200;
 
-  const centerX = svgWidth / 2;
-  const centerY = svgHeight / 2;
-
   let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}">`;
+
   svgContent += shapeSVG;
 
-  const fontSize = 48;
-  const textY = centerY + fontSize / 4;
+  let fontSize = 48;
+  let textX = svgWidth / 2;
+  let textY = svgHeight / 2;
 
-  svgContent += `<text x="${centerX}" y="${textY}" font-size="${fontSize}" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">${text}</text>`;
+  if (shapeSVG.includes('polygon')) {
+    fontSize = 32; // Decrease font size for triangle
+    textY = svgHeight * 0.7; // Move text down for triangle
+  }
+
+  svgContent += `<text x="${textX}" y="${textY}" font-size="${fontSize}" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">${text}</text>`;
   svgContent += `</svg>`;
   return svgContent;
 }
+
+
 
 inquirer
   .prompt([
@@ -51,7 +57,7 @@ inquirer
     },
   ])
   .then((answers) => {
-    const { shape, shapeColor } = answers;
+    const { shape, shapeColor } = answers; // Capture shapeColor here
     let shapeInstance;
 
     switch (shape) {
@@ -68,9 +74,9 @@ inquirer
         throw new Error(`Unsupported shape: ${shape}`);
     }
 
-    shapeInstance.setColor(shapeColor);
+    shapeInstance.setColor(shapeColor); // Use shapeColor captured from user input
 
-    return generateSVG(answers, shapeInstance.render());
+    return generateSVG(answers, shapeInstance.render(), shapeColor); // Pass shapeColor to generateSVG
   })
   .then((svgContent) => {
     fs.writeFile('examples/logo.svg', svgContent, (err) => {
