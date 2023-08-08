@@ -1,38 +1,13 @@
 const inquirer = require('inquirer');
 const fs = require('fs');
+const { drawCircle, drawTriangle, drawSquare } = require('./lib/shapes');
 
-function generateSVG(answers) {
-  const { text, textColor, shape, shapeColor } = answers;
-
-  // Validate the shape input
-  if (shape !== 'circle' && shape !== 'triangle' && shape !== 'square') {
-    throw new Error(`Unsupported shape: ${shape}`);
-  }
-
-  // Create the SVG content with the specified size
+function generateSVG(answers, shapeSVG) {
+  const { text, textColor } = answers;
   let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200">`;
-
-  // Draw the shape based on the user's input
-  switch (shape) {
-    case 'circle':
-      svgContent += `<circle cx="150" cy="100" r="50" fill="${shapeColor}" />`;
-      break;
-    case 'triangle':
-      svgContent += `<polygon points="150,50 100,150 200,150" fill="${shapeColor}" />`;
-      break;
-    case 'square':
-      svgContent += `<rect x="100" y="50" width="100" height="100" fill="${shapeColor}" />`;
-      break;
-    default:
-      throw new Error(`Unsupported shape: ${shape}`);
-  }
-
-  // Draw the text based on the user's input
+  svgContent += shapeSVG;
   svgContent += `<text x="150" y="125" font-size="48" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">${text}</text>`;
-
   svgContent += `</svg>`;
-
-  // Return the SVG content
   return svgContent;
 }
 
@@ -43,7 +18,6 @@ inquirer
       name: 'text',
       message: 'Enter up to three characters for the text:',
       validate: function (value) {
-        // Validate that the input contains up to three characters
         return value.length > 0 && value.length <= 3 ? true : 'Please enter up to three characters.';
       },
     },
@@ -65,14 +39,29 @@ inquirer
     },
   ])
   .then((answers) => {
-    // Process the user's input to generate the SVG content
-    return generateSVG(answers);
+    const { shape, shapeColor } = answers;
+    let shapeSVG;
+
+    switch (shape) {
+      case 'circle':
+        shapeSVG = drawCircle(shapeColor);
+        break;
+      case 'triangle':
+        shapeSVG = drawTriangle(shapeColor);
+        break;
+      case 'square':
+        shapeSVG = drawSquare(shapeColor);
+        break;
+      default:
+        throw new Error(`Unsupported shape: ${shape}`);
+    }
+
+    return generateSVG(answers, shapeSVG);
   })
   .then((svgContent) => {
-    // Write the SVG content to a file named 'logo.svg'
-    fs.writeFile('logo.svg', svgContent, (err) => {
+    fs.writeFile('examples/logo.svg', svgContent, (err) => {
       if (err) throw err;
-      console.log('Generated logo.svg');
+      console.log('Generated logo, and put it in the examples folder, open from file explorer.');
     });
   })
   .catch((error) => {

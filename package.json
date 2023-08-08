@@ -15,5 +15,8 @@
     "inquirer": "^8.2.6",
     "svg.js": "^2.7.1",
     "svgdom": "^0.1.14"
+  },
+  "devDependencies": {
+    "jest": "^29.6.2"
   }
 }
