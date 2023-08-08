@@ -8,4 +8,4 @@ Run app
 3. Follow Console Prompts
 
 Run Tests
-1. type "jest" in console to run tests on shapes.js
+1. type "npx jest" in console to run tests on shapes.js

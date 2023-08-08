@@ -1,12 +1,24 @@
 const inquirer = require('inquirer');
 const fs = require('fs');
-const { drawCircle, drawTriangle, drawSquare } = require('./lib/shapes');
+const Triangle = require('./lib/triangle');
+const Circle = require('./lib/circle');
+const Square = require('./lib/square');
 
 function generateSVG(answers, shapeSVG) {
   const { text, textColor } = answers;
-  let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200">`;
+  const svgWidth = 300;
+  const svgHeight = 200;
+
+  const centerX = svgWidth / 2;
+  const centerY = svgHeight / 2;
+
+  let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}">`;
   svgContent += shapeSVG;
-  svgContent += `<text x="150" y="125" font-size="48" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">${text}</text>`;
+
+  const fontSize = 48;
+  const textY = centerY + fontSize / 4;
+
+  svgContent += `<text x="${centerX}" y="${textY}" font-size="${fontSize}" fill="${textColor}" text-anchor="middle" dominant-baseline="middle">${text}</text>`;
   svgContent += `</svg>`;
   return svgContent;
 }
@@ -40,28 +52,30 @@ inquirer
   ])
   .then((answers) => {
     const { shape, shapeColor } = answers;
-    let shapeSVG;
+    let shapeInstance;
 
     switch (shape) {
       case 'circle':
-        shapeSVG = drawCircle(shapeColor);
+        shapeInstance = new Circle();
         break;
       case 'triangle':
-        shapeSVG = drawTriangle(shapeColor);
+        shapeInstance = new Triangle();
         break;
       case 'square':
-        shapeSVG = drawSquare(shapeColor);
+        shapeInstance = new Square();
         break;
       default:
         throw new Error(`Unsupported shape: ${shape}`);
     }
 
-    return generateSVG(answers, shapeSVG);
+    shapeInstance.setColor(shapeColor);
+
+    return generateSVG(answers, shapeInstance.render());
   })
   .then((svgContent) => {
     fs.writeFile('examples/logo.svg', svgContent, (err) => {
       if (err) throw err;
-      console.log('Generated logo, and put it in the examples folder, open from file explorer.');
+      console.log('Generated logo.svg');
     });
   })
   .catch((error) => {
